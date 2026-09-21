@@ -6,6 +6,7 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/users")
@@ -21,6 +22,17 @@ public class UserController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/{id}/status")
+    public ResponseEntity<UserProfileDto> updateUserStatus(@PathVariable Long id, @RequestBody Map<String, String> body) {
+        return userRepository.findById(id).map(user -> {
+            if (body.containsKey("status")) {
+                user.setStatus(body.get("status"));
+                userRepository.save(user);
+            }
+            return ResponseEntity.ok(new UserProfileDto(user));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @Data
     public static class UserProfileDto {
         private Long id;
@@ -31,6 +43,8 @@ public class UserController {
         private String gender;
         private String company;
         private String position;
+        private String status;
+        private String profilePicture;
 
         public UserProfileDto(User user) {
             this.id = user.getId();
@@ -41,6 +55,8 @@ public class UserController {
             this.gender = user.getGender();
             this.company = user.getCompany();
             this.position = user.getPosition();
+            this.status = user.getStatus();
+            this.profilePicture = user.getProfilePicture();
         }
     }
 }

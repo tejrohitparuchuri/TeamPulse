@@ -5,199 +5,331 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Pulse - Dashboard</title>
     <style>
-        body {
-            background-color: #0d0d0d;
-            color: #fff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            margin: 0;
-            padding: 40px;
-        }
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    :root {
+      /* Material 3 Google App Style - Dark Theme with Pill Buttons */
+      --md-sys-color-primary: #8ab4f8;
+      --md-sys-color-on-primary: #003067;
+      --md-sys-color-surface: #131314;
+      --md-sys-color-surface-container: #1e1f20;
+      --md-sys-color-surface-container-high: #2d2e30;
+      --md-sys-color-on-surface: #e3e3e3;
+      --md-sys-color-on-surface-variant: #c4c7c5;
+      --md-sys-color-outline: #8e918f;
+      --md-sys-color-outline-variant: #444746;
+      --md-sys-color-error: #f2b8b5;
+      --google-hover-bg: rgba(255, 255, 255, 0.08);
+    }
+    
+    body {
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 40px;
+        box-sizing: border-box;
+    }
         
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid #333;
-            padding-bottom: 20px;
-            margin-bottom: 40px;
-        }
+    .user-profile-banner {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: var(--md-sys-color-surface-container);
+        border-radius: 24px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 24px 32px;
+        margin-bottom: 40px;
+        width: 100%;
+        box-sizing: border-box;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+    
+    .user-profile-left {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+    }
 
-        h1 {
-            margin: 0;
-            font-size: 32px;
-            font-weight: 800;
-        }
+    .user-profile-left img {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 2px solid var(--md-sys-color-primary);
+    }
 
-        .logout-btn {
-            background: transparent;
-            color: #ff2a2a;
-            border: 1px solid #ff2a2a;
-            padding: 8px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.2s;
-        }
+    .user-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
 
-        .logout-btn:hover {
-            background: #ff2a2a;
-            color: #fff;
-        }
+    .user-info h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 400;
+        color: var(--md-sys-color-on-surface);
+    }
 
-        /* Workspace Grid */
-        .workspace-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 24px;
-        }
+    .user-info p {
+        margin: 0;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 14px;
+    }
 
-        .workspace-card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            border-radius: 12px;
-            padding: 24px;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            min-height: 120px;
-            text-align: center;
-        }
+    .status-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
 
-        .workspace-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
-            border-color: #ff2a2a;
-        }
+    .status-indicator {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #34a853;
+    }
 
-        .workspace-card h3 {
-            margin: 0;
-            font-size: 24px;
-            color: #fff;
-        }
+    #status-select {
+        background: var(--md-sys-color-surface-container-high);
+        color: var(--md-sys-color-on-surface);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 20px;
+        padding: 6px 14px;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    
+    #status-select:focus {
+        outline: none;
+        border-color: var(--md-sys-color-primary);
+    }
 
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            background: #111;
-            border-radius: 12px;
-            border: 1px dashed #444;
-            display: none; /* hidden by default */
-        }
-        
-        .empty-state p {
-            color: #aaa;
-            font-size: 18px;
-            margin-bottom: 24px;
-        }
+    .logout-btn {
+        background: transparent;
+        color: var(--md-sys-color-primary);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 10px 24px;
+        border-radius: 100px; /* Pill shape */
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
 
-        .primary-btn {
-            background: #ff2a2a;
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 6px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background 0.2s;
-        }
+    .logout-btn:hover {
+        background: var(--google-hover-bg);
+        color: rgb(247, 94, 94);
+        background-color: rgba(190, 103, 103, 0.295);
+    }
 
-        .primary-btn:hover {
-            background: #d41d1d;
-        }
+    /* Workspace Grid */
+    .workspace-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 24px;
+    }
 
-        /* Floating Add Button */
-        .fab {
-            position: fixed;
-            bottom: 40px;
-            right: 40px;
-            width: 64px;
-            height: 64px;
-            background-color: #ff2a2a;
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 32px;
-            box-shadow: 0 4px 12px rgba(255, 42, 42, 0.4);
-            cursor: pointer;
-            transition: transform 0.2s, background 0.2s;
-            display: none; /* hidden by default */
-            z-index: 100;
-        }
+    .workspace-card {
+        background: var(--md-sys-color-surface-container);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        border-radius: 24px;
+        padding: 24px;
+        cursor: pointer;
+        transition: background-color 0.2s, box-shadow 0.2s, border-color 0.2s;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        min-height: 120px;
+        text-align: center;
+        transition: all 0.2s ease-in-out;
+    }
 
-        .fab:hover {
-            transform: scale(1.1);
-            background: #d41d1d;
-        }
+    .workspace-card:hover {
+        background: var(--md-sys-color-surface-container-high);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        border-color: var(--md-sys-color-outline);
+        transform: scale(1.03);
+        transition: all 0.3s ease-in-out;
+        background-color: rgba(106, 192, 250, 0.178);
+    }
 
-        /* Modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            z-index: 200;
-        }
-        .modal-content {
-            background: #111;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #333;
-            width: 320px;
-            text-align: center;
-        }
-        .modal-content h2 { margin-top: 0; }
-        .modal-content input {
-            width: 100%;
-            padding: 12px;
-            margin: 16px 0 24px;
-            background: #222;
-            border: 1px solid #444;
-            color: #fff;
-            border-radius: 6px;
-            box-sizing: border-box;
-            font-size: 16px;
-        }
-        .modal-content input:focus { outline: none; border-color: #ff2a2a; }
-        .modal-actions {
-            display: flex;
-            gap: 12px;
-        }
-        .secondary-btn {
-            background: #333;
-            color: white;
-            border: none;
-            padding: 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            flex: 1;
-            font-weight: bold;
-            transition: background 0.2s;
-        }
-        .secondary-btn:hover { background: #444; }
-        .primary-btn { flex: 1; width: 100%; } /* flex:1 overrides width, but ensures full width when alone */
+    .workspace-card h3 {
+        margin: 0;
+        font-size: 20px;
+        font-weight: 400;
+        color: var(--md-sys-color-on-surface);
+    }
+
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: var(--md-sys-color-surface-container);
+        border-radius: 24px;
+        border: 1px dashed var(--md-sys-color-outline-variant);
+        display: none;
+    }
+    
+    .empty-state p {
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 16px;
+        margin-bottom: 24px;
+    }
+
+    .primary-btn {
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border: none;
+        padding: 10px 24px;
+        border-radius: 100px; /* Pill shape */
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: filter 0.2s, box-shadow 0.2s;
+    }
+
+    .primary-btn:hover {
+        filter: brightness(1.1);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    }
+
+    /* Floating Add Button */
+    .fab {
+        position: fixed;
+        bottom: 40px;
+        right: 40px;
+        width: 64px;
+        height: 64px;
+        background-color: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        cursor: pointer;
+        transition: transform 0.2s, filter 0.2s;
+        display: none;
+        z-index: 100;
+    }
+
+    .fab:hover {
+        transform: scale(1.05);
+        filter: brightness(1.1);
+    }
+
+    /* Modal (Dialog) */
+    .modal-overlay {
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(0, 0, 0, 0.6);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 200;
+    }
+    
+    .modal-content {
+        background: var(--md-sys-color-surface-container);
+        padding: 32px;
+        border-radius: 28px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        width: 360px;
+        text-align: left;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    
+    .modal-content h2 { 
+        margin-top: 0; 
+        font-weight: 400; 
+        font-size: 24px; 
+        margin-bottom: 24px; 
+        color: var(--md-sys-color-on-surface);
+    }
+    
+    .modal-content input {
+        width: 100%;
+        padding: 14px 16px;
+        margin: 0 0 20px 0;
+        background: var(--md-sys-color-surface-container-high);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface);
+        border-radius: 12px;
+        box-sizing: border-box;
+        font-size: 16px;
+    }
+
+    .modal-content input::placeholder {
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.7;
+    }
+    
+    .modal-content input:focus { 
+        outline: none; 
+        border-color: var(--md-sys-color-primary); 
+        border-width: 2px;
+        padding: 13px 15px;
+    }
+    
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 8px;
+    }
+    
+    .secondary-btn {
+        background: transparent;
+        color: var(--md-sys-color-primary);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        padding: 10px 24px;
+        border-radius: 100px; /* Pill shape */
+        cursor: pointer;
+        font-weight: 500;
+        font-size: 14px;
+        transition: background 0.2s;
+    }
+    
+    .secondary-btn:hover { 
+        background: var(--google-hover-bg); 
+    }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1 id="welcome-text">Welcome, ...</h1>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+    <div class="user-profile-banner">
+        <div class="user-profile-left">
+            <img id="user-avatar" src="https://ui-avatars.com/api/?name=User&background=random" alt="Profile Picture">
+            <div class="user-info">
+                <h2 id="profile-name">User Name</h2>
+                <p id="profile-email">user@example.com</p>
+                <div class="status-container">
+                    <span class="status-indicator" id="status-indicator"></span>
+                    <select id="status-select" onchange="updateStatus(this.value)">
+                        <option value="Online">Online</option>
+                        <option value="Busy">Busy</option>
+                        <option value="Do Not Disturb">Do Not Disturb</option>
+                        <option value="Offline">Offline</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        <div style="display: flex; gap: 12px; align-items: center;">
+            <button class="primary-btn" onclick="showJoinModal()">Join Workspace</button>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
     </div>
 
     <!-- Empty State -->
     <div id="empty-state" class="empty-state">
         <h2>You don't belong to any workspaces yet.</h2>
         <p>Join an existing workspace or create a new one to start collaborating!</p>
-        <button class="primary-btn" style="width:auto;" onclick="showCreateModal()">Create a New Workspace</button>
+        <button class="primary-btn" onclick="showCreateModal()">Create a New Workspace</button>
     </div>
 
     <!-- Grid -->
@@ -222,15 +354,76 @@
         </div>
     </div>
 
+    <!-- Join Workspace Modal -->
+    <div id="join-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Join Workspace</h2>
+            <input type="text" id="join-workspace-id" placeholder="Workspace ID" autocomplete="off">
+            <input type="text" id="join-workspace-code" placeholder="Join Code (6-digit)" autocomplete="off" onkeydown="if(event.key === 'Enter') submitJoin()">
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeJoinModal()">Cancel</button>
+                <button class="primary-btn" onclick="submitJoin()">Join</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         const userId = localStorage.getItem('tp_user_id');
         const userName = localStorage.getItem('tp_user_name');
 
         if (!userId) {
-            window.location.href = 'login.html';
+            window.location.href = 'login';
         }
 
-        document.getElementById('welcome-text').innerText = `Welcome, ${userName}`;
+        async function loadUserProfile() {
+            try {
+                const res = await fetch(`/api/users/${userId}`);
+                if (res.ok) {
+                    const user = await res.json();
+                    document.getElementById('profile-name').innerText = user.name || user.username;
+                    document.getElementById('profile-email').innerText = user.email;
+                    
+                    if (user.profilePicture) {
+                        document.getElementById('user-avatar').src = user.profilePicture;
+                    } else {
+                        document.getElementById('user-avatar').src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.username)}&background=random`;
+                    }
+
+                    if (user.status) {
+                        document.getElementById('status-select').value = user.status;
+                        updateStatusIndicator(user.status);
+                    }
+                }
+            } catch (err) {
+                console.error("Failed to load user profile", err);
+            }
+        }
+
+        function updateStatusIndicator(status) {
+            const indicator = document.getElementById('status-indicator');
+            switch (status) {
+                case 'Online': indicator.style.background = '#34a853'; break;
+                case 'Busy': indicator.style.background = '#ea4335'; break;
+                case 'Do Not Disturb': indicator.style.background = '#fbbc05'; break;
+                case 'Offline': indicator.style.background = '#8e918f'; break;
+                default: indicator.style.background = '#34a853';
+            }
+        }
+
+        async function updateStatus(newStatus) {
+            updateStatusIndicator(newStatus);
+            try {
+                await fetch(`/api/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ status: newStatus })
+                });
+            } catch (err) {
+                console.error("Failed to update status", err);
+            }
+        }
+
+        loadUserProfile();
 
         async function loadWorkspaces() {
             try {
@@ -249,7 +442,7 @@
             const emptyState = document.getElementById('empty-state');
             const fab = document.getElementById('fab');
 
-            grid.innerHTML = ''; // clear
+            grid.innerHTML = '';
 
             if (!workspaces || workspaces.length === 0) {
                 emptyState.style.display = 'block';
@@ -263,11 +456,16 @@
                 workspaces.forEach(ws => {
                     const card = document.createElement('div');
                     card.className = 'workspace-card';
-                    card.innerHTML = `<h3>${ws.name}</h3>`;
+                    card.innerHTML = `
+                        <h3>${ws.name}</h3>
+                        <div style="margin-top: 8px; font-size: 13px; color: var(--google-text-secondary);">
+                            Participation Score: <strong>${ws.engagementScore || 0}</strong>
+                        </div>
+                    `;
                     card.onclick = () => {
                         localStorage.setItem('tp_active_workspace_id', ws.id);
                         localStorage.setItem('tp_active_workspace_name', ws.name);
-                        window.location.href = `workspace.html?id=${ws.id}`;
+                        window.location.href = `workspace?id=${ws.id}`;
                     };
                     grid.appendChild(card);
                 });
@@ -298,7 +496,7 @@
 
                 if (res.ok) {
                     closeModal();
-                    loadWorkspaces(); // Refresh list
+                    loadWorkspaces();
                 } else {
                     alert("Failed to create workspace.");
                 }
@@ -308,12 +506,47 @@
             }
         }
 
-        function logout() {
-            localStorage.clear();
-            window.location.href = 'login.html';
+        function showJoinModal() {
+            document.getElementById('join-workspace-id').value = '';
+            document.getElementById('join-workspace-code').value = '';
+            document.getElementById('join-modal').style.display = 'flex';
+            document.getElementById('join-workspace-id').focus();
         }
 
-        // Init
+        function closeJoinModal() {
+            document.getElementById('join-modal').style.display = 'none';
+        }
+
+        async function submitJoin() {
+            const wid = document.getElementById('join-workspace-id').value.trim();
+            const code = document.getElementById('join-workspace-code').value.trim();
+            if (!wid || !code) return;
+
+            try {
+                const res = await fetch(`/api/workspaces/${wid}/join`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ userId: userId, code: code })
+                });
+
+                if (res.ok) {
+                    closeJoinModal();
+                    loadWorkspaces();
+                } else {
+                    const text = await res.text();
+                    alert("Failed to join workspace: " + text);
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error.");
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login';
+        }
+
         loadWorkspaces();
     </script>
 </body>

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface WorkspaceMemberRepository extends JpaRepository<WorkspaceMember, Long> {
+    List<WorkspaceMember> findByWorkspaceId(Long workspaceId);
     List<WorkspaceMember> findByWorkspaceIdOrderByRankPositionAsc(Long workspaceId);
     Optional<WorkspaceMember> findByWorkspaceIdAndUserId(Long workspaceId, Long userId);
     List<WorkspaceMember> findByUserId(Long userId);

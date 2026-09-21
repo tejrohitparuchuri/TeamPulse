@@ -32,6 +32,11 @@ public class User {
     private String company;
     private String position;
 
+    @Column(columnDefinition = "varchar(255) default 'Online'")
+    private String status = "Online";
+
+    private String profilePicture;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     @Builder.Default

@@ -32,12 +32,23 @@ public class WorkspaceController {
 
     // GET - Retrieve workspaces for a user
     @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Workspace>> getUserWorkspaces(@PathVariable Long userId) {
-        List<Workspace> workspaces = workspaceMemberRepository.findByUserId(userId)
+    public ResponseEntity<List<UserWorkspaceResponse>> getUserWorkspaces(@PathVariable Long userId) {
+        List<UserWorkspaceResponse> workspaces = workspaceMemberRepository.findByUserId(userId)
                 .stream()
-                .map(WorkspaceMember::getWorkspace)
+                .map(member -> new UserWorkspaceResponse(
+                        member.getWorkspace().getId(),
+                        member.getWorkspace().getName(),
+                        member.getEngagementScore()
+                ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(workspaces);
+    }
+
+    @Data
+    public static class UserWorkspaceResponse {
+        private final Long id;
+        private final String name;
+        private final Integer engagementScore;
     }
 
     // POST - Create a workspace and automatically add the user as a member
@@ -145,5 +156,89 @@ public class WorkspaceController {
             return ResponseEntity.ok().build();
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private String generateJoinCode(Long workspaceId, long timeWindow) {
+        String raw = workspaceId + "-SecretSalt-" + timeWindow;
+        int code = Math.abs(raw.hashCode()) % 1000000;
+        return String.format("%06d", code);
+    }
+
+    // GET - Retrieve current join code (Admin only)
+    @GetMapping("/{workspaceId}/join-code")
+    public ResponseEntity<Map<String, String>> getJoinCode(@PathVariable Long workspaceId, @RequestParam Long userId) {
+        return workspaceRepository.findById(workspaceId).map(workspace -> {
+            if (!workspace.getOwner().getId().equals(userId)) {
+                return ResponseEntity.status(403).<Map<String, String>>build();
+            }
+            long timeWindow = System.currentTimeMillis() / 20000;
+            String code = generateJoinCode(workspaceId, timeWindow);
+            return ResponseEntity.ok(Map.of("code", code));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
+    // POST - Join workspace using ID and Code
+    @PostMapping("/{workspaceId}/join")
+    public ResponseEntity<?> joinWorkspace(@PathVariable Long workspaceId, @RequestBody JoinRequest request) {
+        return workspaceRepository.findById(workspaceId).map(workspace -> {
+            // Check join code
+            long currentWindow = System.currentTimeMillis() / 20000;
+            boolean valid = false;
+            for (int i = -1; i <= 1; i++) {
+                if (generateJoinCode(workspaceId, currentWindow + i).equals(request.getCode())) {
+                    valid = true;
+                    break;
+                }
+            }
+            if (!valid) {
+                return ResponseEntity.status(400).body("Invalid or expired join code");
+            }
+
+            // Get User
+            User user = userRepository.findById(request.getUserId()).orElse(null);
+            if (user == null) {
+                return ResponseEntity.status(404).body("User not found");
+            }
+
+            // Check company matches
+            if (user.getCompany() == null || workspace.getOwner().getCompany() == null ||
+                !user.getCompany().equalsIgnoreCase(workspace.getOwner().getCompany())) {
+                return ResponseEntity.status(403).body("You must belong to the same company to join this workspace");
+            }
+
+            // Check if already a member
+            if (workspaceMemberRepository.findByWorkspaceId(workspaceId).stream()
+                    .anyMatch(m -> m.getUser().getId().equals(user.getId()))) {
+                return ResponseEntity.status(400).body("Already a member of this workspace");
+            }
+
+            // Add to workspace
+            WorkspaceMember member = WorkspaceMember.builder()
+                    .workspace(workspace)
+                    .user(user)
+                    .rankPosition(workspaceMemberRepository.findByWorkspaceId(workspaceId).size() + 1)
+                    .build();
+            workspaceMemberRepository.save(member);
+
+            // Add to #general channel
+            channelRepository.findByWorkspaceId(workspaceId).stream()
+                    .filter(c -> "general".equalsIgnoreCase(c.getName()))
+                    .findFirst()
+                    .ifPresent(generalChannel -> {
+                        ChannelMember cm = ChannelMember.builder()
+                                .channel(generalChannel)
+                                .user(user)
+                                .build();
+                        channelMemberRepository.save(cm);
+                    });
+
+            return ResponseEntity.ok(workspace);
+        }).orElse(ResponseEntity.status(404).body("Workspace not found"));
+    }
+
+    @Data
+    public static class JoinRequest {
+        private Long userId;
+        private String code;
     }
 }
