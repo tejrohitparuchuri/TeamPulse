@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slack Workspace UI</title>
+  <style>
+    :root {
+      --sidebar-bg: #3f0e40;
+      --sidebar-hover: #350d36;
+      --sidebar-active: #1164a3;
+      --sidebar-text: #bcabbc;
+      --main-bg: #ffffff;
+      --main-text: #1d1c1d;
+      --border-color: #dddddd;
+      --input-bg: #ffffff;
+      --table-th-bg: #f8f8f8;
+      --send-btn-bg: #007a5a;
+    }
+
+    body.dark {
+      --main-bg: #1a1d21;
+      --main-text: #d1d2d3;
+      --border-color: #383a40;
+      --input-bg: #222529;
+      --table-th-bg: #222529;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { display: flex; height: 100vh; background: var(--main-bg); color: var(--main-text); transition: background 0.2s, color 0.2s; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; transition: background 0.2s; }
+    
+    .workspace-header-wrapper {
+      position: relative;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 10px;
+    }
+
+    .workspace-title-btn { 
+      font-size: 18px; 
+      font-weight: bold; 
+      color: #fff; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+    .workspace-title-btn:hover { opacity: 0.85; }
+
+    .palette-circle-btn {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background: var(--sidebar-bg);
+      border: 2px solid #ffffff;
+      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.35);
+      flex-shrink: 0;
+      transition: transform 0.1s;
+    }
+    .palette-circle-btn:hover { transform: scale(1.1); }
+
+    .palette-popover {
+      display: none;
+      position: absolute;
+      top: 48px;
+      left: 16px;
+      background: var(--main-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 12px;
+      box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+      z-index: 1000;
+      flex-direction: column;
+      gap: 10px;
+      width: 170px;
+    }
+    .palette-popover.open { display: flex; }
+
+    .colors-grid {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 8px;
+    }
+    .color-swatch {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 1px solid rgba(0,0,0,0.15);
+      transition: transform 0.1s;
+    }
+    .color-swatch:hover { transform: scale(1.2); }
+
+    .mode-toggle-inline {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border-color);
+      font-size: 12px;
+    }
+    .mode-item {
+      cursor: pointer;
+      color: #888;
+      user-select: none;
+      font-weight: 500;
+    }
+    .mode-item:hover { color: var(--main-text); }
+    .mode-item.active {
+      color: var(--main-text);
+      font-weight: bold;
+    }
+    .mode-divider {
+      color: var(--border-color);
+      font-weight: bold;
+    }
+
+    .channel-list { padding: 12px 0; list-style: none; }
+    .channel-list li { padding: 6px 16px; cursor: pointer; }
+    .channel-list li:hover { background: rgba(0, 0, 0, 0.15); color: #fff; }
+    .channel-list li.active { background: var(--sidebar-active); color: #fff; }
+
+    /* Main Area */
+    .main { flex: 1; display: flex; flex-direction: column; height: 100vh; }
+    .top-nav { 
+      height: 54px; 
+      border-bottom: 1px solid var(--border-color); 
+      display: flex; 
+      align-items: center; 
+      padding: 0 20px; 
+      font-weight: bold; 
+    }
+
+    .content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+    
+    .view { display: none; height: 100%; }
+    .view.active { display: flex; flex-direction: column; }
+
+    .messages-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+    .message { line-height: 1.4; word-break: break-word; }
+
+    /* Centered Input Wrapper */
+    .chat-input-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 0 16px;
+    }
+    
+    /* Pill Box: clickable everywhere */
+    .chat-pill-box {
+      display: inline-flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border-color);
+      border-radius: 28px;
+      padding: 4px 6px 4px 18px;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      cursor: text;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .chat-pill-box:hover {
+      border-color: var(--sidebar-bg);
+      box-shadow: 0 0 12px var(--sidebar-bg);
+    }
+
+    .chat-pill-box:focus-within {
+      border-color: var(--sidebar-bg);
+      box-shadow: 0 0 14px var(--sidebar-bg);
+    }
+
+    .chat-pill-box textarea {
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+      color: var(--main-text);
+      line-height: 20px;
+      height: 20px;
+      max-height: 120px;
+      padding: 2px 0;
+      width: 120px;
+      overflow-y: hidden;
+      cursor: text;
+    }
+
+    .pill-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      cursor: default;
+    }
+
+    .attach-btn {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: #777;
+      font-size: 15px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .attach-btn:hover { background: rgba(125, 125, 125, 0.12); color: var(--main-text); }
+
+    .send-btn-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--send-btn-bg);
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: filter 0.2s, transform 0.1s;
+    }
+    .send-btn-circle:hover { filter: brightness(1.1); }
+    .send-btn-circle:active { transform: scale(0.92); }
+    .send-btn-circle svg { width: 14px; height: 14px; fill: #ffffff; margin-left: 2px; }
+
+    /* Ranking Table & Progress Bars */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
+    th { background: var(--table-th-bg); font-size: 14px; }
+
+    .progress-container {
+      width: 100%;
+      max-width: 280px;
+      background: rgba(125, 125, 125, 0.2);
+      border-radius: 6px;
+      height: 14px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+  </style>
+</head>
+<body>
+
+  <span id="text-ruler" style="visibility: hidden; position: absolute; white-space: pre; font: 14px -apple-system, BlinkMacSystemFont, sans-serif; pointer-events: none;"></span>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="workspace-header-wrapper">
+      <div class="workspace-title-btn" onclick="showView('info-view')">
+        <span>Acme Corp ▾</span>
+      </div>
+
+      <div class="palette-circle-btn" id="theme-indicator" title="Select Theme" onclick="togglePalette(event)"></div>
+
+      <div class="palette-popover" id="theme-popover">
+        <div class="colors-grid" id="color-palette"></div>
+        <div class="mode-toggle-inline">
+          <span class="mode-item active" id="opt-light" onclick="setMode('light')">Light</span>
+          <span class="mode-divider">|</span>
+          <span class="mode-item" id="opt-dark" onclick="setMode('dark')">Dark</span>
+        </div>
+      </div>
+    </div>
+
+    <ul class="channel-list">
+      <li class="active" onclick="showView('chat-view')"># general</li>
+      <li onclick="showView('chat-view')"># random</li>
+      <li onclick="showView('chat-view')"># announcements</li>
+    </ul>
+  </div>
+
+  <!-- Main View -->
+  <div class="main">
+    <div class="top-nav">
+      <span id="nav-title"># general</span>
+    </div>
+
+    <div class="content">
+      <div id="chat-view" class="view active">
+        <div class="messages-container" id="messages-list">
+          <div class="message"><strong>Alex:</strong> Welcome to the workspace!</div>
+          <div class="message"><strong>Sarah:</strong> Click the workspace title in the sidebar to check rankings.</div>
+        </div>
+
+        <!-- Pill Box: container click focuses the input -->
+        <div class="chat-input-wrapper">
+          <div class="chat-pill-box" id="pill-box" onclick="focusInput(event)">
+            <textarea 
+              id="msg-input" 
+              placeholder="Message #general" 
+              rows="1" 
+              oninput="resizePill(this)" 
+              onkeydown="handleKeyDown(event)">
+            </textarea>
+            <div class="pill-actions" onclick="event.stopPropagation()">
+              <label class="attach-btn" title="Attach file">
+                📎
+                <input type="file" id="file-input" style="display: none;" onchange="handleFile(event)">
+              </label>
+              <button class="send-btn-circle" onclick="sendMessage()" title="Send message (Shift+Enter)">
+                <svg viewBox="0 0 24 24">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="info-view" class="view">
+        <h2 style="margin-bottom: 4px;">Acme Corp Info</h2>
+        <p style="color: #888; margin-bottom: 16px;">Workspace details & activity overview</p>
+
+        <h3>Ranking</h3>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px;">Rank</th>
+              <th style="width: 200px;">Member</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const themeColors = [
+      "#3f0e40", "#243242", "#0f5b99", "#0e7b57", "#993318",
+      "#5a239b", "#9b1b54", "#4a5568", "#12635e", "#9e580e"
+    ];
+
+    const members = [
+      { name: "Liam Vance", score: 1420 },
+      { name: "Chloe Bennett", score: 1180 },
+      { name: "Marcus Chen", score: 950 },
+      { name: "Sofia Patel", score: 600 },
+      { name: "Jordan Hayes", score: 380 }
+    ];
+
+    const popover = document.getElementById("theme-popover");
+    const paletteContainer = document.getElementById("color-palette");
+
+    themeColors.forEach(color => {
+      const swatch = document.createElement("div");
+      swatch.className = "color-swatch";
+      swatch.style.backgroundColor = color;
+      swatch.onclick = (e) => {
+        e.stopPropagation();
+        setSidebarColor(color);
+        popover.classList.remove("open");
+      };
+      paletteContainer.appendChild(swatch);
+    });
+
+    function togglePalette(e) {
+      e.stopPropagation();
+      popover.classList.toggle("open");
+    }
+
+    window.addEventListener("click", (e) => {
+      if (!popover.contains(e.target) && e.target.id !== "theme-indicator") {
+        popover.classList.remove("open");
+      }
+    });
+
+    function setSidebarColor(color) {
+      document.documentElement.style.setProperty("--sidebar-bg", color);
+      document.getElementById("theme-indicator").style.backgroundColor = color;
+    }
+
+    function setMode(mode) {
+      const isDark = (mode === 'dark');
+      document.body.classList.toggle("dark", isDark);
+      document.getElementById("opt-dark").classList.toggle("active", isDark);
+      document.getElementById("opt-light").classList.toggle("active", !isDark);
+    }
+
+    function getColor(pct) {
+      if (pct >= 80) return "#7b1fa2";
+      if (pct >= 65) return "#2e7d32";
+      if (pct >= 50) return "#fbc02d";
+      if (pct >= 35) return "#f57c00";
+      return "#d32f2f";
+    }
+
+    function renderRanking() {
+      const topScore = members[0].score;
+      const tbody = document.getElementById("ranking-body");
+
+      tbody.innerHTML = members.map((m, idx) => {
+        const pct = Math.round((m.score / topScore) * 100);
+        return `
+          <tr>
+            <td>#${idx + 1}</td>
+            <td><strong>${m.name}</strong></td>
+            <td>
+              <div class="progress-container" title="${pct}% (${m.score} pts)">
+                <div class="progress-bar" style="width: ${pct}%; background-color: ${getColor(pct)};"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+
+      const title = document.getElementById('nav-title');
+      title.innerText = (viewId === 'info-view') ? 'Workspace Details' : '# general';
+    }
+
+    // Direct focus when clicking anywhere inside the pill box
+    function focusInput(e) {
+      const input = document.getElementById('msg-input');
+      input.focus();
+    }
+
+    function resizePill(textarea) {
+      const ruler = document.getElementById('text-ruler');
+      const lines = textarea.value.split('\n');
+      let maxLineWidth = 0;
+
+      lines.forEach(line => {
+        ruler.textContent = line || textarea.placeholder;
+        if (ruler.offsetWidth > maxLineWidth) {
+          maxLineWidth = ruler.offsetWidth;
+        }
+      });
+
+      const targetWidth = textarea.value.length === 0 ? 120 : Math.min(Math.max(maxLineWidth + 12, 120), 550);
+      textarea.style.width = targetWidth + 'px';
+
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
+    }
+
+    function sendMessage() {
+      const input = document.getElementById('msg-input');
+      const text = input.value.trim();
+      if (!text) return;
+
+      const list = document.getElementById('messages-list');
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<strong>You:</strong> ${text.replace(/\n/g, '<br>')}`;
+      list.appendChild(div);
+
+      input.value = '';
+      input.style.width = '120px';
+      input.style.height = '20px';
+      input.style.overflowY = 'hidden';
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        } else {
+          setTimeout(() => resizePill(e.target), 0);
+        }
+      }
+    }
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const list = document.getElementById('messages-list');
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<strong>You:</strong> 📎 <em>${file.name}</em>`;
+      list.appendChild(div);
+
+      e.target.value = '';
+      list.scrollTop = list.scrollHeight;
+    }
+
+    renderRanking();
+  </script>
+</body>
+</html>

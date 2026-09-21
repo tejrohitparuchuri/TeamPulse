@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Slack Workspace UI</title>
+  <style>
+    :root {
+      --sidebar-bg: #0d0d0d;
+      --sidebar-hover: #1a1a1a;
+      --sidebar-active: #ff2a2a;
+      --sidebar-text: #e1e1e1;
+      --main-bg: #111111;
+      --main-text: #ffffff;
+      --border-color: #333333;
+      --input-bg: #1a1a1a;
+      --table-th-bg: #1a1a1a;
+      --send-btn-bg: #ff2a2a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, sans-serif; }
+    body { display: flex; height: 100vh; background: var(--main-bg); color: var(--main-text); transition: background 0.2s, color 0.2s; }
+
+    /* Sidebar */
+    .sidebar { width: 260px; background: var(--sidebar-bg); color: var(--sidebar-text); display: flex; flex-direction: column; transition: background 0.2s; }
+    
+    .workspace-header-wrapper {
+      position: relative;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      display: flex;
+      align-items: center;
+      padding: 14px 16px;
+      gap: 10px;
+    }
+
+    .workspace-title-btn { 
+      font-size: 18px; 
+      font-weight: bold; 
+      color: #fff; 
+      cursor: pointer; 
+      display: flex; 
+      align-items: center;
+      gap: 4px;
+      user-select: none;
+    }
+    .workspace-title-btn:hover { opacity: 0.85; }
+
+    .channel-list { padding: 12px 0; list-style: none; }
+    .channel-list li { padding: 6px 16px; cursor: pointer; }
+    .channel-list li:hover { background: rgba(0, 0, 0, 0.15); color: #fff; }
+    .channel-list li.active { background: var(--sidebar-active); color: #fff; }
+
+    /* Main Area */
+    .main { flex: 1; display: flex; flex-direction: column; height: 100vh; }
+    .top-nav { 
+      height: 54px; 
+      border-bottom: 1px solid var(--border-color); 
+      display: flex; 
+      align-items: center; 
+      padding: 0 20px; 
+      font-weight: bold; 
+    }
+
+    .content { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
+    
+    .view { display: none; height: 100%; }
+    .view.active { display: flex; flex-direction: column; }
+
+    .messages-container { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 12px; }
+    .message { line-height: 1.4; word-break: break-word; }
+
+    /* Centered Input Wrapper */
+    .chat-input-wrapper {
+      display: flex;
+      justify-content: center;
+      width: 100%;
+      padding: 12px 0 16px;
+    }
+    
+    /* Pill Box: clickable everywhere */
+    .chat-pill-box {
+      display: inline-flex;
+      align-items: center;
+      background: var(--input-bg);
+      border: 1.5px solid var(--border-color);
+      border-radius: 28px;
+      padding: 4px 6px 4px 18px;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      cursor: text;
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .chat-pill-box:hover {
+      border-color: var(--sidebar-active);
+      box-shadow: 0 0 12px var(--sidebar-active);
+    }
+
+    .chat-pill-box:focus-within {
+      border-color: var(--sidebar-active);
+      box-shadow: 0 0 14px var(--sidebar-active);
+    }
+
+    .chat-pill-box textarea {
+      border: none;
+      outline: none;
+      resize: none;
+      font-size: 14px;
+      font-family: inherit;
+      background: transparent;
+      color: var(--main-text);
+      line-height: 20px;
+      height: 20px;
+      max-height: 120px;
+      padding: 2px 0;
+      width: 120px;
+      overflow-y: hidden;
+      cursor: text;
+    }
+
+    .pill-actions {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      flex-shrink: 0;
+      cursor: default;
+    }
+
+    .attach-btn {
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      color: #777;
+      font-size: 15px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .attach-btn:hover { background: rgba(125, 125, 125, 0.12); color: var(--main-text); }
+
+    .send-btn-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--send-btn-bg);
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      flex-shrink: 0;
+      transition: filter 0.2s, transform 0.1s;
+    }
+    .send-btn-circle:hover { filter: brightness(1.1); }
+    .send-btn-circle:active { transform: scale(0.92); }
+    .send-btn-circle svg { width: 14px; height: 14px; fill: #ffffff; margin-left: 2px; }
+
+    /* Ranking Table & Progress Bars */
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { text-align: left; padding: 12px 10px; border-bottom: 1px solid var(--border-color); }
+    th { background: var(--table-th-bg); font-size: 14px; }
+
+    .progress-container {
+      width: 100%;
+      max-width: 280px;
+      background: rgba(125, 125, 125, 0.2);
+      border-radius: 6px;
+      height: 14px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 100%;
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+
+    /* Profile Badge */
+    .profile-badge {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .profile-badge:hover { background: rgba(0, 0, 0, 0.15); }
+    .profile-avatar {
+      width: 32px;
+      height: 32px;
+      background: var(--sidebar-active);
+      color: white;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 14px;
+    }
+    .profile-name { font-weight: bold; color: #fff; }
+
+    /* Profile Modal */
+    .profile-modal-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6); display: none; align-items: center; justify-content: center; z-index: 2000;
+    }
+    .profile-modal-content {
+      background: var(--main-bg); color: var(--main-text); padding: 30px; border-radius: 12px; width: 350px; text-align: left;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    }
+    .profile-modal-content h2 { margin-top: 0; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 10px;}
+    .profile-detail { margin-bottom: 12px; }
+    .profile-detail strong { display: inline-block; width: 90px; color: #888; }
+    .close-btn { margin-top: 20px; padding: 10px; background: #ff2a2a; color: white; border: none; border-radius: 6px; cursor: pointer; width: 100%; font-weight: bold; }
+    .close-btn:hover { background: #d41d1d; }
+  </style>
+</head>
+<body>
+
+  <span id="text-ruler" style="visibility: hidden; position: absolute; white-space: pre; font: 14px -apple-system, BlinkMacSystemFont, sans-serif; pointer-events: none;"></span>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="profile-badge" onclick="showProfile()">
+      <div class="profile-avatar" id="avatar-initials">?</div>
+      <div class="profile-name" id="sidebar-user-name">Loading...</div>
+    </div>
+
+    <div class="workspace-header-wrapper">
+      <div class="workspace-title-btn" onclick="showView('info-view')">
+        <span>Acme Corp ▾</span>
+      </div>
+    </div>
+
+    <ul class="channel-list">
+      <li class="active" onclick="showView('chat-view')"># general</li>
+    </ul>
+  </div>
+
+  <!-- Main View -->
+  <div class="main">
+    <div class="top-nav">
+      <span id="nav-title"># general</span>
+    </div>
+
+    <div class="content">
+      <div id="chat-view" class="view active">
+        <div class="messages-container" id="messages-list">
+        </div>
+
+        <!-- Pill Box: container click focuses the input -->
+        <div class="chat-input-wrapper">
+          <div class="chat-pill-box" id="pill-box" onclick="focusInput(event)">
+            <textarea 
+              id="msg-input" 
+              placeholder="Message #general" 
+              rows="1" 
+              oninput="resizePill(this)" 
+              onkeydown="handleKeyDown(event)">
+            </textarea>
+            <div class="pill-actions" onclick="event.stopPropagation()">
+              <label class="attach-btn" title="Attach file">
+                📎
+                <input type="file" id="file-input" style="display: none;" onchange="handleFile(event)">
+              </label>
+              <button class="send-btn-circle" onclick="sendMessage()" title="Send message (Shift+Enter)">
+                <svg viewBox="0 0 24 24">
+                  <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="info-view" class="view">
+        <h2 style="margin-bottom: 4px;">Acme Corp Info</h2>
+        <p style="color: #888; margin-bottom: 16px;">Workspace details & activity overview</p>
+
+        <h3>Ranking</h3>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px;">Rank</th>
+              <th style="width: 200px;">Member</th>
+              <th>Progress</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-body"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="profile-modal" class="profile-modal-overlay">
+    <div class="profile-modal-content">
+      <h2>Your Profile</h2>
+      <div class="profile-detail"><strong>Name:</strong> <span id="prof-name">...</span></div>
+      <div class="profile-detail"><strong>Username:</strong> <span id="prof-username">...</span></div>
+      <div class="profile-detail"><strong>Email:</strong> <span id="prof-email">...</span></div>
+      <div class="profile-detail"><strong>Age:</strong> <span id="prof-age">...</span></div>
+      <div class="profile-detail"><strong>Gender:</strong> <span id="prof-gender">...</span></div>
+      <div class="profile-detail"><strong>Company:</strong> <span id="prof-company">...</span></div>
+      <div class="profile-detail"><strong>Position:</strong> <span id="prof-position">...</span></div>
+      <button class="close-btn" onclick="closeProfile()">Close</button>
+    </div>
+  </div>
+
+  <script>
+    const userId = localStorage.getItem('tp_user_id');
+    const userName = localStorage.getItem('tp_user_name');
+
+    if (userId && userName) {
+      document.getElementById('sidebar-user-name').innerText = userName;
+      document.getElementById('avatar-initials').innerText = userName.charAt(0).toUpperCase();
+    }
+
+    async function showProfile() {
+      document.getElementById('profile-modal').style.display = 'flex';
+      try {
+        const res = await fetch(`/api/users/${userId}`);
+        if (res.ok) {
+          const data = await res.json();
+          document.getElementById('prof-name').innerText = data.name || 'N/A';
+          document.getElementById('prof-username').innerText = data.username || 'N/A';
+          document.getElementById('prof-email').innerText = data.email || 'N/A';
+          document.getElementById('prof-age').innerText = data.age || 'N/A';
+          document.getElementById('prof-gender').innerText = data.gender || 'N/A';
+          document.getElementById('prof-company').innerText = data.company || 'N/A';
+          document.getElementById('prof-position').innerText = data.position || 'N/A';
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    }
+
+    function closeProfile() {
+      document.getElementById('profile-modal').style.display = 'none';
+    }
+
+    let members = [];
+
+    function getColor(pct) {
+      if (pct >= 80) return "#7b1fa2";
+      if (pct >= 65) return "#2e7d32";
+      if (pct >= 50) return "#fbc02d";
+      if (pct >= 35) return "#f57c00";
+      return "#d32f2f";
+    }
+
+    function renderRanking() {
+      const tbody = document.getElementById("ranking-body");
+      if (members.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align: center; color: #888; padding: 20px;">No members to display</td></tr>`;
+        return;
+      }
+      const topScore = members[0].score;
+
+      tbody.innerHTML = members.map((m, idx) => {
+        const pct = Math.round((m.score / topScore) * 100);
+        return `
+          <tr>
+            <td>#${idx + 1}</td>
+            <td><strong>${m.name}</strong></td>
+            <td>
+              <div class="progress-container" title="${pct}% (${m.score} pts)">
+                <div class="progress-bar" style="width: ${pct}%; background-color: ${getColor(pct)};"></div>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function showView(viewId) {
+      document.querySelectorAll('.view').forEach(el => el.classList.remove('active'));
+      document.getElementById(viewId).classList.add('active');
+
+      const title = document.getElementById('nav-title');
+      title.innerText = (viewId === 'info-view') ? 'Workspace Details' : '# general';
+    }
+
+    // Direct focus when clicking anywhere inside the pill box
+    function focusInput(e) {
+      const input = document.getElementById('msg-input');
+      input.focus();
+    }
+
+    function resizePill(textarea) {
+      const ruler = document.getElementById('text-ruler');
+      const lines = textarea.value.split('\n');
+      let maxLineWidth = 0;
+
+      lines.forEach(line => {
+        ruler.textContent = line || textarea.placeholder;
+        if (ruler.offsetWidth > maxLineWidth) {
+          maxLineWidth = ruler.offsetWidth;
+        }
+      });
+
+      const targetWidth = textarea.value.length === 0 ? 120 : Math.min(Math.max(maxLineWidth + 12, 120), 550);
+      textarea.style.width = targetWidth + 'px';
+
+      textarea.style.height = 'auto';
+      textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+      textarea.style.overflowY = textarea.scrollHeight > 120 ? 'auto' : 'hidden';
+    }
+
+    let currentChannelId = null;
+    let messagePollInterval = null;
+    let lastMessageCount = 0;
+
+    async function loadChannels() {
+      const workspaceId = localStorage.getItem('tp_active_workspace_id');
+      if (!workspaceId) return;
+
+      try {
+        const res = await fetch(`/api/channels/workspace/${workspaceId}`);
+        if (res.ok) {
+          const channels = await res.json();
+          if (channels.length > 0) {
+            currentChannelId = channels[0].id;
+            loadMessages();
+            startPolling();
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load channels", err);
+      }
+    }
+
+    async function loadMessages() {
+      if (!currentChannelId) return;
+      try {
+        const res = await fetch(`/api/messages/channel/${currentChannelId}`);
+        if (res.ok) {
+          const messages = await res.json();
+          if (messages.length !== lastMessageCount) {
+            renderMessages(messages);
+            lastMessageCount = messages.length;
+            loadRankings();
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load messages", err);
+      }
+    }
+
+    function renderMessages(messages) {
+      const list = document.getElementById('messages-list');
+      const wasAtBottom = list.scrollHeight - list.scrollTop === list.clientHeight;
+      
+      list.innerHTML = '';
+      messages.forEach(msg => {
+        const div = document.createElement('div');
+        div.className = 'message';
+        div.innerHTML = `<strong>${msg.userName}:</strong> ${msg.content.replace(/\\n/g, '<br>')}`;
+        list.appendChild(div);
+      });
+
+      // Auto-scroll if we were at bottom or just for new messages to ensure visibility
+      list.scrollTop = list.scrollHeight;
+    }
+
+    function startPolling() {
+      if (messagePollInterval) clearInterval(messagePollInterval);
+      messagePollInterval = setInterval(loadMessages, 2000);
+    }
+
+    async function loadRankings() {
+      const workspaceId = localStorage.getItem('tp_active_workspace_id');
+      if (!workspaceId) return;
+
+      try {
+        const res = await fetch(`/api/workspaces/${workspaceId}/rankings`);
+        if (res.ok) {
+          members = await res.json();
+          renderRanking();
+        }
+      } catch (err) {
+        console.error("Failed to load rankings", err);
+      }
+    }
+
+    async function sendMessage() {
+      const input = document.getElementById('msg-input');
+      const text = input.value.trim();
+      if (!text || !currentChannelId || !userId) return;
+
+      try {
+        const res = await fetch('/api/messages', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            content: text,
+            channelId: currentChannelId,
+            userId: userId
+          })
+        });
+        
+        if (res.ok) {
+          input.value = '';
+          resizePill(input);
+          loadMessages();
+        }
+      } catch (err) {
+        console.error("Failed to send message", err);
+      }
+    }
+
+    function handleKeyDown(e) {
+      if (e.key === 'Enter') {
+        if (e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        } else {
+          setTimeout(() => resizePill(e.target), 0);
+        }
+      }
+    }
+
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const list = document.getElementById('messages-list');
+      const div = document.createElement('div');
+      div.className = 'message';
+      div.innerHTML = `<strong>You:</strong> 📎 <em>${file.name}</em>`;
+      list.appendChild(div);
+
+      e.target.value = '';
+      list.scrollTop = list.scrollHeight;
+    }
+
+    renderRanking();
+    loadRankings();
+    loadChannels();
+  </script>
+</body>
+</html>

@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Pulse</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #000;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Among Us style stars */
+        #stars-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            overflow: hidden;
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            animation: moveStar linear infinite;
+        }
+
+        @keyframes moveStar {
+            from {
+                transform: translateX(100vw);
+            }
+            to {
+                transform: translateX(-100vw);
+            }
+        }
+
+        /* Logo and Pulse Container */
+        .portal-content {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Red Pulse Animation */
+        .pulse-background {
+            position: absolute;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            z-index: 1; /* Behind text */
+            width: 100%;
+            height: 100%;
+        }
+
+        .pulse-bar {
+            width: 8px;
+            background-color: #ff2a2a;
+            border-radius: 4px;
+            animation: soundWave 1.2s ease-in-out infinite alternate;
+            opacity: 0.7;
+        }
+
+        /* Randomize bar heights and animation delays */
+        .pulse-bar:nth-child(1) { height: 30px; animation-delay: 0.1s; }
+        .pulse-bar:nth-child(2) { height: 50px; animation-delay: 0.4s; }
+        .pulse-bar:nth-child(3) { height: 70px; animation-delay: 0.2s; }
+        .pulse-bar:nth-child(4) { height: 90px; animation-delay: 0.6s; }
+        .pulse-bar:nth-child(5) { height: 110px; animation-delay: 0.3s; }
+        .pulse-bar:nth-child(6) { height: 130px; animation-delay: 0.7s; }
+        .pulse-bar:nth-child(7) { height: 100px; animation-delay: 0.5s; }
+        .pulse-bar:nth-child(8) { height: 80px; animation-delay: 0.1s; }
+        .pulse-bar:nth-child(9) { height: 120px; animation-delay: 0.8s; }
+        .pulse-bar:nth-child(10) { height: 90px; animation-delay: 0.4s; }
+        .pulse-bar:nth-child(11) { height: 60px; animation-delay: 0.2s; }
+        .pulse-bar:nth-child(12) { height: 40px; animation-delay: 0.6s; }
+        .pulse-bar:nth-child(13) { height: 25px; animation-delay: 0.3s; }
+
+        @keyframes soundWave {
+            0% { transform: scaleY(0.4); }
+            100% { transform: scaleY(1.2); }
+        }
+
+        /* Logo Text */
+        .logo-text {
+            position: relative;
+            z-index: 2; /* In front of pulse */
+            font-size: 5rem;
+            font-weight: 900;
+            color: #ffffff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 4px 12px rgba(0,0,0,0.8);
+        }
+
+        /* User provided button CSS */
+        button {
+            font-size: 18px;
+            color: #e1e1e1;
+            font-family: inherit;
+            font-weight: 800;
+            cursor: pointer;
+            position: relative;
+            border: none;
+            background: none;
+            text-transform: uppercase;
+            transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition-duration: 400ms;
+            transition-property: color;
+            padding: 10px 20px;
+        }
+
+        button:focus,
+        button:hover {
+            color: #fff;
+        }
+
+        button:focus:after,
+        button:hover:after {
+            width: 100%;
+            left: 0%;
+        }
+
+        button:after {
+            content: "";
+            pointer-events: none;
+            bottom: -2px;
+            left: 50%;
+            position: absolute;
+            width: 0%;
+            height: 2px;
+            background-color: #fff;
+            transition-timing-function: cubic-bezier(0.25, 0.8, 0.25, 1);
+            transition-duration: 400ms;
+            transition-property: width, left;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Stars Background -->
+    <div id="stars-container"></div>
+
+    <div class="portal-content">
+        <div class="logo-wrapper">
+            <!-- Red Pulse Background -->
+            <div class="pulse-background">
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+                <div class="pulse-bar"></div>
+            </div>
+            
+            <!-- White Text -->
+            <div class="logo-text">Team Pulse</div>
+        </div>
+
+        <button onclick="window.location.href='login.html'">
+            get started &rarr;
+        </button>
+    </div>
+
+    <script>
+        // Generate moving stars
+        const starsContainer = document.getElementById('stars-container');
+        const numStars = 100;
+
+        for (let i = 0; i < numStars; i++) {
+            let star = document.createElement('div');
+            star.className = 'star';
+            
+            // Random size between 1px and 3px
+            let size = Math.random() * 2 + 1;
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            
+            // Random vertical position
+            star.style.top = Math.random() * 100 + 'vh';
+            
+            // Random horizontal start position (spread across the screen)
+            star.style.left = Math.random() * 100 + 'vw';
+            
+            // Random animation duration (parallax effect)
+            let duration = Math.random() * 20 + 10;
+            star.style.animationDuration = duration + 's';
+            
+            // Random animation delay so they don't all start at once
+            star.style.animationDelay = (Math.random() * 20 * -1) + 's';
+            
+            // Slight opacity variation
+            star.style.opacity = Math.random() * 0.5 + 0.5;
+
+            starsContainer.appendChild(star);
+        }
+    </script>
+</body>
+</html>

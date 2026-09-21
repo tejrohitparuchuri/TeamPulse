@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Pulse - Dashboard</title>
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #fff;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            margin: 0;
+            padding: 40px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: 32px;
+            font-weight: 800;
+        }
+
+        .logout-btn {
+            background: transparent;
+            color: #ff2a2a;
+            border: 1px solid #ff2a2a;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #ff2a2a;
+            color: #fff;
+        }
+
+        /* Workspace Grid */
+        .workspace-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 24px;
+        }
+
+        .workspace-card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            border-radius: 12px;
+            padding: 24px;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 120px;
+            text-align: center;
+        }
+
+        .workspace-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.4);
+            border-color: #ff2a2a;
+        }
+
+        .workspace-card h3 {
+            margin: 0;
+            font-size: 24px;
+            color: #fff;
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #111;
+            border-radius: 12px;
+            border: 1px dashed #444;
+            display: none; /* hidden by default */
+        }
+        
+        .empty-state p {
+            color: #aaa;
+            font-size: 18px;
+            margin-bottom: 24px;
+        }
+
+        .primary-btn {
+            background: #ff2a2a;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .primary-btn:hover {
+            background: #d41d1d;
+        }
+
+        /* Floating Add Button */
+        .fab {
+            position: fixed;
+            bottom: 40px;
+            right: 40px;
+            width: 64px;
+            height: 64px;
+            background-color: #ff2a2a;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 4px 12px rgba(255, 42, 42, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s, background 0.2s;
+            display: none; /* hidden by default */
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+            background: #d41d1d;
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+        .modal-content {
+            background: #111;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #333;
+            width: 320px;
+            text-align: center;
+        }
+        .modal-content h2 { margin-top: 0; }
+        .modal-content input {
+            width: 100%;
+            padding: 12px;
+            margin: 16px 0 24px;
+            background: #222;
+            border: 1px solid #444;
+            color: #fff;
+            border-radius: 6px;
+            box-sizing: border-box;
+            font-size: 16px;
+        }
+        .modal-content input:focus { outline: none; border-color: #ff2a2a; }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .secondary-btn {
+            background: #333;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 1;
+            font-weight: bold;
+            transition: background 0.2s;
+        }
+        .secondary-btn:hover { background: #444; }
+        .primary-btn { flex: 1; width: 100%; } /* flex:1 overrides width, but ensures full width when alone */
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <h1 id="welcome-text">Welcome, ...</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="empty-state">
+        <h2>You don't belong to any workspaces yet.</h2>
+        <p>Join an existing workspace or create a new one to start collaborating!</p>
+        <button class="primary-btn" style="width:auto;" onclick="showCreateModal()">Create a New Workspace</button>
+    </div>
+
+    <!-- Grid -->
+    <div id="workspace-grid" class="workspace-grid">
+        <!-- populated by JS -->
+    </div>
+
+    <!-- Floating Action Button -->
+    <div id="fab" class="fab" onclick="showCreateModal()" title="Add / Create Workspace">
+        +
+    </div>
+
+    <!-- Create Workspace Modal -->
+    <div id="create-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>Create New Workspace</h2>
+            <input type="text" id="new-workspace-name" placeholder="Workspace Name" autocomplete="off" onkeydown="if(event.key === 'Enter') submitWorkspace()">
+            <div class="modal-actions">
+                <button class="secondary-btn" onclick="closeModal()">Cancel</button>
+                <button class="primary-btn" onclick="submitWorkspace()">Create</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const userId = localStorage.getItem('tp_user_id');
+        const userName = localStorage.getItem('tp_user_name');
+
+        if (!userId) {
+            window.location.href = 'login.html';
+        }
+
+        document.getElementById('welcome-text').innerText = `Welcome, ${userName}`;
+
+        async function loadWorkspaces() {
+            try {
+                const res = await fetch(`/api/workspaces/user/${userId}`);
+                if (res.ok) {
+                    const workspaces = await res.json();
+                    renderWorkspaces(workspaces);
+                }
+            } catch (err) {
+                console.error("Failed to load workspaces", err);
+            }
+        }
+
+        function renderWorkspaces(workspaces) {
+            const grid = document.getElementById('workspace-grid');
+            const emptyState = document.getElementById('empty-state');
+            const fab = document.getElementById('fab');
+
+            grid.innerHTML = ''; // clear
+
+            if (!workspaces || workspaces.length === 0) {
+                emptyState.style.display = 'block';
+                grid.style.display = 'none';
+                fab.style.display = 'none';
+            } else {
+                emptyState.style.display = 'none';
+                grid.style.display = 'grid';
+                fab.style.display = 'flex';
+
+                workspaces.forEach(ws => {
+                    const card = document.createElement('div');
+                    card.className = 'workspace-card';
+                    card.innerHTML = `<h3>${ws.name}</h3>`;
+                    card.onclick = () => {
+                        localStorage.setItem('tp_active_workspace_id', ws.id);
+                        localStorage.setItem('tp_active_workspace_name', ws.name);
+                        window.location.href = `workspace.html?id=${ws.id}`;
+                    };
+                    grid.appendChild(card);
+                });
+            }
+        }
+
+        function showCreateModal() {
+            const input = document.getElementById('new-workspace-name');
+            input.value = '';
+            document.getElementById('create-modal').style.display = 'flex';
+            input.focus();
+        }
+
+        function closeModal() {
+            document.getElementById('create-modal').style.display = 'none';
+        }
+
+        async function submitWorkspace() {
+            const name = document.getElementById('new-workspace-name').value;
+            if (!name || name.trim() === "") return;
+
+            try {
+                const res = await fetch(`/api/workspaces/user/${userId}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name: name.trim() })
+                });
+
+                if (res.ok) {
+                    closeModal();
+                    loadWorkspaces(); // Refresh list
+                } else {
+                    alert("Failed to create workspace.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Network error.");
+            }
+        }
+
+        function logout() {
+            localStorage.clear();
+            window.location.href = 'login.html';
+        }
+
+        // Init
+        loadWorkspaces();
+    </script>
+</body>
+</html>
