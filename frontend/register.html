@@ -229,9 +229,9 @@
         if (!isUsernameValid) return;
 
         const data = {
-            email: document.getElementById('email').value,
-            username: document.getElementById('username').value,
-            password: document.getElementById('password').value,
+            email: document.getElementById('email').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value.trim(),
             name: document.getElementById('name').value,
             age: parseInt(document.getElementById('age').value),
             gender: document.getElementById('gender').value,
