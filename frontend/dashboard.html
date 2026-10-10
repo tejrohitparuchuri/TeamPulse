@@ -372,12 +372,12 @@
         const userName = localStorage.getItem('tp_user_name');
 
         if (!userId) {
-            window.location.href = 'login';
+            window.location.href = 'login.html';
         }
 
         async function loadUserProfile() {
             try {
-                const res = await fetch(`/api/users/${userId}`);
+                const res = await fetch(`http://localhost:8080/api/users/${userId}`);
                 if (res.ok) {
                     const user = await res.json();
                     document.getElementById('profile-name').innerText = user.name || user.username;
@@ -413,7 +413,7 @@
         async function updateStatus(newStatus) {
             updateStatusIndicator(newStatus);
             try {
-                await fetch(`/api/users/${userId}/status`, {
+                await fetch(`http://localhost:8080/api/users/${userId}/status`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
@@ -427,7 +427,7 @@
 
         async function loadWorkspaces() {
             try {
-                const res = await fetch(`/api/workspaces/user/${userId}`);
+                const res = await fetch(`http://localhost:8080/api/workspaces/user/${userId}`);
                 if (res.ok) {
                     const workspaces = await res.json();
                     renderWorkspaces(workspaces);
@@ -465,7 +465,7 @@
                     card.onclick = () => {
                         localStorage.setItem('tp_active_workspace_id', ws.id);
                         localStorage.setItem('tp_active_workspace_name', ws.name);
-                        window.location.href = `workspace?id=${ws.id}`;
+                        window.location.href = `workspace.html?id=${ws.id}`;
                     };
                     grid.appendChild(card);
                 });
@@ -488,7 +488,7 @@
             if (!name || name.trim() === "") return;
 
             try {
-                const res = await fetch(`/api/workspaces/user/${userId}`, {
+                const res = await fetch(`http://localhost:8080/api/workspaces/user/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: name.trim() })
@@ -523,7 +523,7 @@
             if (!wid || !code) return;
 
             try {
-                const res = await fetch(`/api/workspaces/${wid}/join`, {
+                const res = await fetch(`http://localhost:8080/api/workspaces/${wid}/join`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: userId, code: code })
@@ -544,7 +544,7 @@
 
         function logout() {
             localStorage.clear();
-            window.location.href = 'login';
+            window.location.href = 'login.html';
         }
 
         loadWorkspaces();

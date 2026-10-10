@@ -186,7 +186,7 @@
         const errorMsg = document.getElementById('error-msg');
 
         try {
-            const res = await fetch('/api/auth/login', {
+            const res = await fetch('http://localhost:8080/api/auth/login', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ username, password })
@@ -196,7 +196,7 @@
                 const userData = await res.json();
                 localStorage.setItem('tp_user_id', userData.userId);
                 localStorage.setItem('tp_user_name', userData.name);
-                window.location.href = 'dashboard';
+                window.location.href = 'dashboard.html';
             } else {
                 errorMsg.style.display = 'block';
                 errorMsg.innerText = await res.text();

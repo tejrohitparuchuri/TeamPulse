@@ -203,7 +203,7 @@
         
         debounceTimer = setTimeout(async () => {
             try {
-                const res = await fetch(`/api/auth/check-username?username=${encodeURIComponent(username)}`);
+                const res = await fetch(`http://localhost:8080/api/auth/check-username?username=${encodeURIComponent(username)}`);
                 const exists = await res.json();
                 
                 if (exists) {
@@ -242,14 +242,14 @@
         const errorMsg = document.getElementById('error-msg');
 
         try {
-            const res = await fetch('/api/auth/register', {
+            const res = await fetch('http://localhost:8080/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(data)
             });
 
             if (res.ok) {
-                window.location.href = 'login';
+                window.location.href = 'login.html';
             } else {
                 errorMsg.style.display = 'block';
                 errorMsg.innerText = await res.text();
