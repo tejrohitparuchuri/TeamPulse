@@ -4,7 +4,15 @@
 
 A team collaboration platform in the spirit of Slack — workspaces, channels, and real-time chat — built around one idea: **involvement should be visible, not guessed at.**
 
-Every message, reply, reaction, and huddle quietly feeds a live **Engagement Score**. Each workspace shows its members ranked from most to least involved, with a progress bar that tells the story at a glance.
+Every message, reply, reaction, and interaction quietly feeds a live **Engagement Score**. Each workspace shows its members ranked from most to least involved, with a visual progress bar that tells the story at a glance.
+
+---
+
+## 🔗 Related Repositories
+
+- **Main Full-Stack Repository:** [tejrohitparuchuri/TeamPulse](https://github.com/tejrohitparuchuri/TeamPulse)
+- **Backend Service Repository:** [tejrohitparuchuri/tt-3-1-backend-ext](https://github.com/tejrohitparuchuri/tt-3-1-backend-ext)
+- **Frontend Client Repository:** [tejrohitparuchuri/tt-3-1-frontend-ext](https://github.com/tejrohitparuchuri/tt-3-1-frontend-ext)
 
 ---
 
@@ -19,9 +27,9 @@ Every message, reply, reaction, and huddle quietly feeds a live **Engagement Sco
 - [Project Structure](#project-structure)
 - [API Overview](#api-overview)
 - [Data Model](#data-model)
-- [SEO Approach](#seo-approach)
 - [Roadmap](#roadmap)
 - [Author](#author)
+- [License](#license)
 
 ---
 
@@ -29,29 +37,29 @@ Every message, reply, reaction, and huddle quietly feeds a live **Engagement Sco
 
 | Feature | Description |
 |---|---|
-| **Workspaces** | Top-level team containers. Every workspace starts with a default `#general` channel. |
+| **Workspaces** | Top-level team containers with join-codes and custom roles. Every workspace starts with a default `#general` channel. |
 | **Channels** | Topic-based rooms inside a workspace, public or private. |
-| **Real-time messaging** | Messages render on-device instantly, then sync over WebSocket. |
-| **Engagement ranking** | Members ranked live by weighted activity, with relative progress bars. |
-| **Authentication** | Stateless JWT login, BCrypt-hashed passwords. |
-| **Authorization** | Role-aware access (`ADMIN` / `MEMBER`), scoped per workspace. |
-| **SEO-ready public pages** | Server-rendered with Thymeleaf so crawlers see real HTML. |
+| **Real-time messaging** | Instant messaging with live polling and draft persistence. |
+| **Engagement ranking** | Members ranked live by weighted activity with relative visual progress bars. |
+| **Flexible Authentication** | Log in with either **Username** or **Email**, with real-time username availability validation. |
+| **Role-based Controls** | Workspace owners can invite members, generate join-codes, create channels, and manage permissions. |
+| **Pure Vanilla Frontend** | Zero heavy runtime framework dependencies — lightning-fast on-device rendering with modern dark mode aesthetics. |
 
 ---
 
 ## How Ranking Works
 
-Every qualifying action becomes an **Engagement Event** with a fixed weight:
+Every qualifying action generates an **Engagement Event** with a fixed weight:
 
 | Engagement Event | Weight | Why it counts |
 |---|---|---|
 | Message sent | 2 pts | Core participation signal |
 | Reply / thread response | 3 pts | Rewards conversation, not broadcasting |
-| Reaction added | 1 pt | Small but real acknowledgement |
+| Reaction added | 1 pt | Acknowledgement of team content |
 | Huddle / call joined | 5 pts | High-effort, synchronous presence |
-| Active minutes online | 0.1 pt/min | Sustained presence, without rewarding idle tabs |
+| Active minutes online | 0.1 pt/min | Sustained presence without rewarding idle tabs |
 
-The Ranking Engine folds each new event straight into the member's running score. Updates are **incremental** — only the affected member is re-scored, then the workspace list is re-sorted — so the leaderboard stays live without a full recalculation.
+The Ranking Engine folds each new event straight into the member's running score. Updates are **incremental** — only the affected member is re-scored, then the workspace list is re-sorted — so the leaderboard stays live without heavy database re-aggregations.
 
 ### Bar length
 
@@ -65,11 +73,11 @@ bar % = (member score ÷ top member score) × 100
 
 | Score (relative to #1) | Colour |
 |---|---|
-| ≥ 80% | Purple |
-| 65% – 79% | Green |
-| 50% – 64% | Yellow |
-| 35% – 49% | Orange |
-| < 35% | Red |
+| ≥ 80% | Purple (`#8b5cf6`) |
+| 65% – 79% | Green (`#10b981`) |
+| 50% – 64% | Yellow (`#f59e0b`) |
+| 35% – 49% | Orange (`#f97316`) |
+| < 35% | Red (`#ef4444`) |
 
 ---
 
@@ -77,38 +85,39 @@ bar % = (member score ÷ top member score) × 100
 
 | Layer | Technology |
 |---|---|
-| Build Tool | Apache Maven |
-| Backend | Spring Boot — Web, Security, DevTools, Lombok |
-| Public / SEO Pages | Thymeleaf (server-rendered HTML) |
-| App Frontend | Vanilla JavaScript + Vanilla CSS (on-device rendering) |
-| Persistence | Spring Data JPA / Hibernate |
-| Database | MySQL |
-| Security | Spring Security, JWT, BCrypt |
-| Real-time | WebSocket |
-| Version Control | Git & GitHub |
-
-No heavy frontend framework — interactions stay fast and the footprint stays small.
+| **Backend Framework** | Spring Boot 4.1.1 (Java 17+) |
+| **Security** | Spring Security 6, BCrypt Password Encoding |
+| **Build Tool** | Apache Maven & Maven Wrapper (`mvnw`) |
+| **Database** | MySQL 8.x (InnoDB, `teampulse` schema) |
+| **ORM / Persistence** | Spring Data JPA / Hibernate |
+| **Frontend** | Pure Vanilla JavaScript, HTML5, Modern CSS3 |
+| **Development Servers** | Local Spring Boot on port `3333`, Python HTTP Server on port `5500` |
+| **Version Control** | Git & GitHub |
 
 ---
 
 ## Architecture
 
 ```
-Public Pages          Authenticated App          WebSocket Client
-(Thymeleaf SSR)       (Vanilla JS + CSS)         (live chat + ranking)
-      |                       |                          |
-      +-----------------------+--------------------------+
-                              |
-                  Spring Security Filter Chain
-                (JWT Authentication & Authorization)
-                              |
-      +-----------------------+--------------------------+
-      |                       |                          |
- Controller Layer        Service Layer             Repository Layer
- (REST + Views)      (Business Logic,             (Spring Data JPA)
-                      Ranking Engine)
-                              |
-                       MySQL Database
+┌──────────────────────────────────────┐     ┌─────────────────────────────────────┐
+│           Frontend Client            │     │         Spring Boot Backend         │
+│   (Vanilla JS + CSS on Port 5500)    │     │            (Port 3333)              │
+│                                      │     │                                     │
+│  - index.html (Landing)              │     │  - WebConfig (CORS allowed)         │
+│  - login.html (Username/Email Auth)  │────▶│  - SecurityConfig (PermitAll / CSRF)│
+│  - register.html (Real-time check)   │ REST│  - AuthController                   │
+│  - dashboard.html (Workspaces)       │ API │  - WorkspaceController              │
+│  - workspace.html (Chat & Rankings)  │     │  - ChannelController                │
+└──────────────────────────────────────┘     │  - MessageController                │
+                                             │  - RankingService (Engagement Calc) │
+                                             └──────────────────┬──────────────────┘
+                                                                │
+                                                                ▼ Spring Data JPA
+                                                     ┌─────────────────────┐
+                                                     │   MySQL Database    │
+                                                     │ 127.0.0.1:3306/     │
+                                                     │    teampulse        │
+                                                     └─────────────────────┘
 ```
 
 ---
@@ -117,87 +126,116 @@ Public Pages          Authenticated App          WebSocket Client
 
 ### Prerequisites
 
-- Java 17 or newer
-- Apache Maven
-- MySQL 8.x running locally
+- **Java 17** or newer installed (`java -version`)
+- **MySQL 8.x** running locally on port `3306`
+- **Python 3.x** (or any static HTTP file server) for serving the frontend
+
+---
 
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/<your-username>/teampulse.git
-cd teampulse
+git clone https://github.com/tejrohitparuchuri/TeamPulse.git
+cd TeamPulse
 ```
 
-### 2. Create the database
+---
 
-```sql
-CREATE DATABASE teampulse;
-```
+### 2. Configure the MySQL Database
 
-### 3. Configure credentials
+1. Log into your MySQL server:
+   ```sql
+   CREATE DATABASE teampulse;
+   ```
+2. Open `backend/tp/src/main/resources/application.properties` and verify your MySQL password:
+   ```properties
+   spring.datasource.url=jdbc:mysql://127.0.0.1:3306/teampulse
+   spring.datasource.username=root
+   spring.datasource.password=ptr3
+   ```
 
-Update `src/main/resources/application.properties` (see [Configuration](#configuration)).
+---
 
-### 4. Build and run
+### 3. Run the Backend Service
+
+Navigate to the Spring Boot application directory and launch the server:
+
+- **Windows:**
+  ```powershell
+  cd backend\tp
+  .\mvnw.cmd spring-boot:run
+  ```
+- **macOS / Linux:**
+  ```bash
+  cd backend/tp
+  ./mvnw spring-boot:run
+  ```
+
+The backend starts up on **`http://localhost:3333`**.
+
+---
+
+### 4. Run the Frontend Client
+
+In a separate terminal, serve the `frontend/` directory on port `5500`:
 
 ```bash
-mvn clean
-mvn install -DskipTests
-mvn spring-boot:run
+cd frontend
+python -m http.server 5500
 ```
 
-The app starts at **http://localhost:8080**.
+Open your browser and navigate to:
+👉 **[http://localhost:5500/login.html](http://localhost:5500/login.html)**
 
 ---
 
 ## Configuration
 
-`src/main/resources/application.properties`
+[`backend/tp/src/main/resources/application.properties`](file:///c:/Users/Acer/Desktop/tt-sem-end-project/backend/tp/src/main/resources/application.properties):
 
 ```properties
-# Server
-server.port=8080
+spring.application.name=teampulse
+server.port=3333
 
-# Database
-spring.datasource.url=jdbc:mysql://localhost:3306/teampulse
+spring.datasource.url=jdbc:mysql://127.0.0.1:3306/teampulse
 spring.datasource.username=root
-spring.datasource.password=YOUR_PASSWORD
+spring.datasource.password=ptr3
 
-# JPA
 spring.jpa.hibernate.ddl-auto=update
 spring.jpa.show-sql=true
-
-# Thymeleaf
-spring.thymeleaf.cache=false
-
-# JWT
-app.jwt.secret=YOUR_SECRET_KEY
-app.jwt.expiration-ms=86400000
 ```
-
-> **Note:** Never commit real credentials. Use environment variables or a local `application-dev.properties` that is listed in `.gitignore`.
 
 ---
 
 ## Project Structure
 
 ```
-backend/
-├── src/main/java/app/
-│   ├── controller/     # REST endpoints + Thymeleaf views
-│   ├── service/        # Business logic + Ranking Engine
-│   ├── repository/     # Spring Data JPA interfaces
-│   ├── entity/         # JPA entities mapped to tables
-│   ├── dto/            # Data Transfer Objects
-│   ├── config/         # Security & WebSocket configuration
-│   └── security/       # JWT filter, token utility
-├── src/main/resources/
-│   ├── templates/      # Thymeleaf HTML templates
-│   ├── static/
-│   │   ├── css/        # Vanilla CSS
-│   │   └── js/         # Vanilla JavaScript
-│   └── application.properties
-└── pom.xml
+TeamPulse/
+├── README.md
+├── backend/
+│   ├── TeamPulse_Project_Abstract.docx
+│   └── tp/                                    # Spring Boot REST API
+│       ├── pom.xml                            # Maven dependencies
+│       ├── mvnw / mvnw.cmd                    # Maven wrapper
+│       └── src/
+│           ├── main/
+│           │   ├── java/app/
+│           │   │   ├── component/             # DataSeeder
+│           │   │   ├── config/                # SecurityConfig, WebConfig (CORS)
+│           │   │   ├── controller/            # Auth, Workspace, Channel, Message, etc.
+│           │   │   ├── entity/                # User, Workspace, Channel, Message, Event
+│           │   │   ├── repository/            # Spring Data JPA Repositories
+│           │   │   └── service/               # RankingService
+│           │   └── resources/
+│           │       ├── application.properties # Server port & DB connection
+│           │       └── banner.txt
+│           └── test/
+└── frontend/                                  # Pure Vanilla JS Frontend
+    ├── index.html                             # Landing page
+    ├── login.html                             # Login with Username / Email
+    ├── register.html                          # User registration
+    ├── dashboard.html                         # Workspace list & creation
+    └── workspace.html                         # Channel chat & live engagement rankings
 ```
 
 ---
@@ -206,21 +244,23 @@ backend/
 
 | Method | Endpoint | Description |
 |---|---|---|
-| `POST` | `/api/v1/auth/register` | Create a new account |
-| `POST` | `/api/v1/auth/login` | Authenticate, receive JWT |
-| `GET` | `/api/v1/workspaces` | List the user's workspaces |
-| `POST` | `/api/v1/workspaces` | Create a workspace |
-| `GET` | `/api/v1/workspaces/{id}/ranking` | Ranked members with scores |
-| `GET` | `/api/v1/workspaces/{id}/channels` | List channels |
-| `POST` | `/api/v1/channels` | Create a channel |
-| `GET` | `/api/v1/channels/{id}/messages` | Fetch channel messages |
-| `POST` | `/api/v1/channels/{id}/messages` | Post a message |
-
-All endpoints except `/auth/**` require:
-
-```
-Authorization: Bearer <token>
-```
+| `POST` | `/api/auth/register` | Create a new user account |
+| `POST` | `/api/auth/login` | Authenticate by username or email |
+| `GET` | `/api/auth/check-username?username=...` | Check if username is available |
+| `GET` | `/api/workspaces/user/{userId}` | List workspaces joined by user |
+| `POST` | `/api/workspaces/user/{userId}` | Create a new workspace |
+| `POST` | `/api/workspaces/{wid}/join` | Join workspace via join code |
+| `GET` | `/api/workspaces/{id}/rankings` | Get ranked workspace members & scores |
+| `GET` | `/api/workspaces/{id}/join-code?userId=...` | Get workspace join code (admin only) |
+| `GET` | `/api/channels/workspace/{wid}?userId={uid}`| List channels in workspace |
+| `POST` | `/api/channels/workspace/{wid}` | Create a new channel (admin only) |
+| `GET` | `/api/messages/channel/{channelId}` | Fetch messages for a channel |
+| `POST` | `/api/messages` | Send message (triggers engagement score update) |
+| `GET` | `/api/drafts/channel/{cid}?userId={uid}` | Load saved unsent draft |
+| `POST` | `/api/drafts` | Save draft in real time |
+| `DELETE` | `/api/drafts/channel/{cid}?userId={uid}` | Clear draft after sending message |
+| `GET` | `/api/users/{userId}` | Get user profile details |
+| `POST` | `/api/users/{userId}/status` | Update online/offline user status |
 
 ---
 
@@ -228,48 +268,36 @@ Authorization: Bearer <token>
 
 | Entity | Purpose |
 |---|---|
-| `USER` | An account holder, independent of any one workspace |
-| `ROLE` | Permission set (`ADMIN`, `MEMBER`) |
-| `WORKSPACE` | A team container, owned by a user |
-| `WORKSPACE_MEMBER` | Links user ↔ workspace; holds `engagement_score` and `rank_position` |
-| `CHANNEL` | A topic room inside a workspace |
-| `CHANNEL_MEMBER` | Links user ↔ channel |
-| `MESSAGE` | A chat message, tied to its channel and sender |
-| `ENGAGEMENT_EVENT` | Append-only activity log the Ranking Engine reads |
-
-Engagement is kept as an **append-only log**, so the raw activity trail stays auditable, while `engagement_score` and `rank_position` act as a fast, ready-to-render cache for the UI.
-
----
-
-## SEO Approach
-
-Private workspaces have no business being indexed — but the public face of the platform absolutely should be found.
-
-- Public pages (landing, sign-up, workspace previews) are **server-rendered with Thymeleaf**, arriving complete with titles, meta descriptions, and semantic markup.
-- A maintained `sitemap.xml` and `robots.txt` tell crawlers exactly what to index.
-- Fast first paint, since pages arrive fully formed rather than waiting on a framework to hydrate.
+| `USER` | Account holder with email, username, and encrypted password. |
+| `ROLE` | Workspace permission set (`ADMIN`, `MEMBER`). |
+| `WORKSPACE` | Team collaboration container with an owner and unique join code. |
+| `WORKSPACE_MEMBER` | Links User ↔ Workspace; stores `engagement_score` and `rank_position`. |
+| `CHANNEL` | Topic discussion room inside a workspace. |
+| `CHANNEL_MEMBER` | Links User ↔ Channel. |
+| `MESSAGE` | Chat message linked to channel and author. |
+| `DRAFT` | Temporary unsent message saved per user and channel. |
+| `ENGAGEMENT_EVENT` | Append-only activity log ingested by `RankingService`. |
 
 ---
 
 ## Roadmap
 
-- [ ] Configurable scoring weights per workspace admin
-- [ ] Weekly / monthly ranking snapshots and trend charts
-- [ ] Badges and milestones for sustained engagement
-- [ ] Digest notifications when a member's engagement drops
-- [ ] File sharing in channels
-- [ ] Direct messages between members
+- [ ] WebSocket STOMP real-time message broadcasting
+- [ ] Direct one-on-one messaging
+- [ ] File and media attachment uploads
+- [ ] Customizable engagement weighting per workspace admin
+- [ ] Historic analytics and engagement trend graphs
 
 ---
 
 ## Author
 
-**Tej Rohit Paruchuri**
-Anurag University · Roll No. 24EG105R02
+**Tej Rohit Paruchuri**  
+Anurag University · Roll No. 24EG105R02  
 [tejrohitparuchuri@gmail.com](mailto:tejrohitparuchuri@gmail.com) · [24eg105r02@anurag.edu.in](mailto:24eg105r02@anurag.edu.in)
 
 ---
 
 ## License
 
-This project is available under the MIT License.
+This project is licensed under the MIT License.
