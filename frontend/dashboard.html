@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Team Pulse - Dashboard</title>
+    <script src="config.js"></script>
     <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -377,7 +378,7 @@
 
         async function loadUserProfile() {
             try {
-                const res = await fetch(`http://localhost:3333/api/users/${userId}`);
+                const res = await fetch(`${API_BASE}/api/users/${userId}`);
                 if (res.ok) {
                     const user = await res.json();
                     document.getElementById('profile-name').innerText = user.name || user.username;
@@ -413,7 +414,7 @@
         async function updateStatus(newStatus) {
             updateStatusIndicator(newStatus);
             try {
-                await fetch(`http://localhost:3333/api/users/${userId}/status`, {
+                await fetch(`${API_BASE}/api/users/${userId}/status`, {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ status: newStatus })
@@ -427,7 +428,7 @@
 
         async function loadWorkspaces() {
             try {
-                const res = await fetch(`http://localhost:3333/api/workspaces/user/${userId}`);
+                const res = await fetch(`${API_BASE}/api/workspaces/user/${userId}`);
                 if (res.ok) {
                     const workspaces = await res.json();
                     renderWorkspaces(workspaces);
@@ -488,7 +489,7 @@
             if (!name || name.trim() === "") return;
 
             try {
-                const res = await fetch(`http://localhost:3333/api/workspaces/user/${userId}`, {
+                const res = await fetch(`${API_BASE}/api/workspaces/user/${userId}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ name: name.trim() })
@@ -523,7 +524,7 @@
             if (!wid || !code) return;
 
             try {
-                const res = await fetch(`http://localhost:3333/api/workspaces/${wid}/join`, {
+                const res = await fetch(`${API_BASE}/api/workspaces/${wid}/join`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: userId, code: code })

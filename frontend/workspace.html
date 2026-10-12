@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Workspace</title>
+  <script src="config.js"></script>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
 
@@ -420,7 +421,7 @@
     async function showProfile() {
       document.getElementById('profile-modal').style.display = 'flex';
       try {
-        const res = await fetch(`http://localhost:3333/api/users/${userId}`);
+        const res = await fetch(`${API_BASE}/api/users/${userId}`);
         if (res.ok) {
           const data = await res.json();
           document.getElementById('prof-name').innerText = data.name || 'N/A';
@@ -517,7 +518,7 @@
       if (!workspaceId) return;
 
       try {
-        const res = await fetch(`http://localhost:3333/api/channels/workspace/${workspaceId}?userId=${userId}`);
+        const res = await fetch(`${API_BASE}/api/channels/workspace/${workspaceId}?userId=${userId}`);
         if (res.ok) {
           const channels = await res.json();
           
@@ -563,7 +564,7 @@
     async function loadMessages() {
       if (!currentChannelId) return;
       try {
-        const res = await fetch(`http://localhost:3333/api/messages/channel/${currentChannelId}`);
+        const res = await fetch(`${API_BASE}/api/messages/channel/${currentChannelId}`);
         if (res.ok) {
           const messages = await res.json();
           if (messages.length !== lastMessageCount) {
@@ -601,7 +602,7 @@
       if (!workspaceId) return;
 
       try {
-        const res = await fetch(`http://localhost:3333/api/workspaces/${workspaceId}/rankings`);
+        const res = await fetch(`${API_BASE}/api/workspaces/${workspaceId}/rankings`);
         if (res.ok) {
           members = await res.json();
           renderRanking();
@@ -626,7 +627,7 @@
       if (!text || !currentChannelId || !userId) return;
 
       try {
-        const res = await fetch('http://localhost:3333/api/messages', {
+        const res = await fetch(`${API_BASE}/api/messages`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -640,7 +641,7 @@
           input.value = '';
           resizePill(input);
           loadMessages();
-          fetch(`http://localhost:3333/api/drafts/channel/${currentChannelId}?userId=${userId}`, { method: 'DELETE' }).catch(console.error);
+          fetch(`${API_BASE}/api/drafts/channel/${currentChannelId}?userId=${userId}`, { method: 'DELETE' }).catch(console.error);
         }
       } catch (err) {
         console.error("Failed to send message", err);
@@ -661,7 +662,7 @@
     async function loadDraft() {
         if (!currentChannelId || !userId) return;
         try {
-            const res = await fetch(`http://localhost:3333/api/drafts/channel/${currentChannelId}?userId=${userId}`);
+            const res = await fetch(`${API_BASE}/api/drafts/channel/${currentChannelId}?userId=${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 const input = document.getElementById('msg-input');
@@ -678,7 +679,7 @@
             if (!currentChannelId || !userId) return;
             const text = e.target.value;
             try {
-                await fetch('http://localhost:3333/api/drafts', {
+                await fetch(`${API_BASE}/api/drafts`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ userId: userId, channelId: currentChannelId, content: text })
@@ -708,7 +709,7 @@
         const workspaceId = localStorage.getItem('tp_active_workspace_id');
         if (!workspaceId) return;
         try {
-            const res = await fetch(`http://localhost:3333/api/workspaces/${workspaceId}`);
+            const res = await fetch(`${API_BASE}/api/workspaces/${workspaceId}`);
             if (res.ok) {
                 const ws = await res.json();
                 if (ws.owner.id == userId) {
@@ -728,7 +729,7 @@
         if (!isAdmin) return;
         const workspaceId = localStorage.getItem('tp_active_workspace_id');
         try {
-            const res = await fetch(`http://localhost:3333/api/workspaces/${workspaceId}/join-code?userId=${userId}`);
+            const res = await fetch(`${API_BASE}/api/workspaces/${workspaceId}/join-code?userId=${userId}`);
             if (res.ok) {
                 const data = await res.json();
                 document.getElementById('admin-join-code').innerText = data.code;
@@ -764,7 +765,7 @@
         const channelId = document.getElementById('admin-channel-select').value;
         if (!userIdToAdd || !channelId) return;
         try {
-            const res = await fetch(`http://localhost:3333/api/channels/${channelId}/members`, {
+            const res = await fetch(`${API_BASE}/api/channels/${channelId}/members`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ userId: userIdToAdd, adminId: userId })
@@ -784,7 +785,7 @@
         const workspaceId = localStorage.getItem('tp_active_workspace_id');
         if (!name || !workspaceId) return;
         try {
-            const res = await fetch(`http://localhost:3333/api/channels/workspace/${workspaceId}`, {
+            const res = await fetch(`${API_BASE}/api/channels/workspace/${workspaceId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name: name, adminId: userId })
