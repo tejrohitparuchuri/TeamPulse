@@ -1,5 +1,0 @@
-services:
-  - type: web
-    name: teampulse
-    runtime: static
-    staticPublishPath: frontend
