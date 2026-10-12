@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Pulse - Login</title>
+    <script src="config.js"></script>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    :root {
+      /* Material 3 Google App Style - Dark Theme (Material You / Google Dark) */
+      --md-sys-color-primary: #8ab4f8;
+      --md-sys-color-on-primary: #003067;
+      --md-sys-color-surface: #131314;
+      --md-sys-color-surface-container: #1e1f20;
+      --md-sys-color-surface-container-high: #2d2e30;
+      --md-sys-color-on-surface: #e3e3e3;
+      --md-sys-color-on-surface-variant: #c4c7c5;
+      --md-sys-color-outline: #8e918f;
+      --md-sys-color-outline-variant: #444746;
+      --md-sys-color-error: #f2b8b5;
+    }
+    
+    body {
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+    
+    .container {
+        background: var(--md-sys-color-surface-container);
+        padding: 40px;
+        border-radius: 24px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        width: 380px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    }
+
+    .google-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-bottom: 24px;
+    }
+
+    .google-logo svg {
+        width: 32px;
+        height: 32px;
+    }
+    
+    h2 { 
+        margin-top: 0; 
+        margin-bottom: 8px; 
+        font-weight: 400; 
+        font-size: 24px; 
+        color: var(--md-sys-color-on-surface); 
+    }
+
+    .subtitle {
+        font-size: 14px;
+        color: var(--md-sys-color-on-surface-variant);
+        margin-bottom: 32px;
+    }
+    
+    .form-group { 
+        text-align: left; 
+        margin-bottom: 20px; 
+    }
+    
+    input {
+        width: 100%;
+        padding: 16px;
+        background: var(--md-sys-color-surface-container-high);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface);
+        border-radius: 8px;
+        box-sizing: border-box;
+        font-size: 16px;
+        transition: border-color 0.2s;
+    }
+
+    input::placeholder {
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.7;
+    }
+    
+    input:focus { 
+        outline: none; 
+        border-color: var(--md-sys-color-primary); 
+        border-width: 2px;
+        padding: 15px; /* offset for thicker border */
+    }
+    
+    .error { 
+        color: var(--md-sys-color-error); 
+        font-size: 14px; 
+        margin-bottom: 16px; 
+        display: none; 
+        font-weight: 500; 
+    }
+    
+    button {
+        width: 100%;
+        padding: 14px 24px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border: none;
+        border-radius: 24px; /* Google App pill button style */
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 12px;
+        transition: filter 0.2s, box-shadow 0.2s;
+    }
+    
+    button:hover { 
+        filter: brightness(1.1); 
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); 
+    }
+    
+    .footer { 
+        margin-top: 28px; 
+        font-size: 14px; 
+        color: var(--md-sys-color-on-surface-variant); 
+    }
+    
+    .footer a { 
+        color: var(--md-sys-color-primary); 
+        text-decoration: none; 
+        font-weight: 500; 
+    }
+    
+    .footer a:hover { 
+        text-decoration: underline; 
+    }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="google-logo">
+        <svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <style>
+            .tp-bg { fill: #1e1f20; }
+            .tp-card { fill: #2d2e30; rx: 28px; }
+            .tp-text { font-family: 'Roboto', sans-serif; font-weight: 500; font-size: 54px; fill: #e3e3e3; }
+            .tp-accent { fill: #8ab4f8; }
+          </style>
+          <rect width="120" height="120" rx="32" class="tp-card"/>
+          <!-- Google-style Material 3 monogram for TP -->
+          <text x="50%" y="54%" dominant-baseline="middle" text-anchor="middle" class="tp-text">
+            T<tspan class="tp-accent">P</tspan>
+          </text>
+        </svg>
+    </div>
+    <h2>Sign in</h2>
+    <div class="subtitle">to continue to Team Pulse</div>
+    <div id="error-msg" class="error">Invalid credentials</div>
+    <form id="login-form">
+        <div class="form-group">
+            <input type="text" id="username" placeholder="Username or email" required>
+        </div>
+        <div class="form-group">
+            <input type="password" id="password" placeholder="Password" required>
+        </div>
+        <button type="submit">Next</button>
+    </form>
+    <div class="footer">
+        Not your computer? Use Guest mode to sign in privately. <br><br>
+        New here? <a href="register.html">Create account</a>
+    </div>
+</div>
+
+<script>
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value.trim();
+        const errorMsg = document.getElementById('error-msg');
+
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (res.ok) {
+                const userData = await res.json();
+                localStorage.setItem('tp_user_id', userData.userId);
+                localStorage.setItem('tp_user_name', userData.name);
+                window.location.href = 'dashboard.html';
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = await res.text();
+            }
+        } catch (err) {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = 'Network error';
+        }
+    });
+</script>
+
+</body>
+</html>

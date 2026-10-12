@@ -1,19 +1,17 @@
 // config.js - TeamPulse Dynamic API Configuration
 (function () {
-  const LOCAL_API = 'http://localhost:3333';
-  // Deployed Render backend URL default (weblink: teampulse)
-  const DEFAULT_PROD_API = 'https://teampulse.onrender.com';
-
   function resolveApiBase() {
     if (window.API_BASE_URL) return window.API_BASE_URL;
     const saved = localStorage.getItem('API_BASE_URL');
     if (saved && saved.trim()) return saved.trim().replace(/\/+$/, '');
 
-    const hostname = window.location.hostname;
-    if (!hostname || hostname === 'localhost' || hostname === '127.0.0.1') {
-      return LOCAL_API;
+    // If served by static server on port 5500, point to backend port 3333
+    if (window.location.port === '5500') {
+      return 'http://localhost:3333';
     }
-    return DEFAULT_PROD_API.replace(/\/+$/, '');
+
+    // When served directly by Spring Boot (locally or deployed on Render), use same-origin relative URLs
+    return '';
   }
 
   window.API_BASE = resolveApiBase();

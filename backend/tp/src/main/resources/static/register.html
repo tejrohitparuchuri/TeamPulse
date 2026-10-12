@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Team Pulse - Register</title>
+    <script src="config.js"></script>
+    <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap');
+
+    :root {
+      /* Material 3 Google App Style - Dark Theme with Pill Buttons */
+      --md-sys-color-primary: #8ab4f8;
+      --md-sys-color-on-primary: #003067;
+      --md-sys-color-surface: #131314;
+      --md-sys-color-surface-container: #1e1f20;
+      --md-sys-color-surface-container-high: #2d2e30;
+      --md-sys-color-on-surface: #e3e3e3;
+      --md-sys-color-on-surface-variant: #c4c7c5;
+      --md-sys-color-outline: #8e918f;
+      --md-sys-color-outline-variant: #444746;
+      --md-sys-color-error: #f2b8b5;
+      --google-hover-bg: rgba(255, 255, 255, 0.08);
+    }
+    
+    body {
+        background-color: var(--md-sys-color-surface);
+        color: var(--md-sys-color-on-surface);
+        font-family: 'Roboto', sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        margin: 0;
+    }
+    .container {
+        background: var(--md-sys-color-surface-container);
+        padding: 40px;
+        border-radius: 28px;
+        border: 1px solid var(--md-sys-color-outline-variant);
+        width: 700px;
+        text-align: center;
+        max-height: 90vh;
+        overflow-y: auto;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    }
+    h2 { 
+        margin-top: 0; 
+        margin-bottom: 24px; 
+        font-weight: 400; 
+        font-size: 28px; 
+        color: var(--md-sys-color-on-surface); 
+    }
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; text-align: left; }
+    .form-group { position: relative; }
+    label { display: block; margin-bottom: 8px; font-size: 14px; color: var(--md-sys-color-on-surface-variant); font-weight: 500;}
+    input, select {
+        width: 100%;
+        padding: 14px 16px;
+        background: var(--md-sys-color-surface-container-high);
+        border: 1px solid var(--md-sys-color-outline-variant);
+        color: var(--md-sys-color-on-surface);
+        border-radius: 12px;
+        box-sizing: border-box;
+        font-family: inherit;
+        font-size: 16px;
+    }
+    input::placeholder {
+        color: var(--md-sys-color-on-surface-variant);
+        opacity: 0.7;
+    }
+    input:focus, select:focus { 
+        outline: none; 
+        border-color: var(--md-sys-color-primary); 
+        border-width: 2px;
+        padding: 13px 15px;
+    }
+    
+    .username-check {
+        position: absolute;
+        right: 16px;
+        top: 42px;
+        font-size: 18px;
+    }
+    .check-ok { color: #34a853; }
+    .check-fail { color: var(--md-sys-color-error); }
+
+    .error { color: var(--md-sys-color-error); font-size: 14px; margin-bottom: 16px; display: none; font-weight: 500; }
+    
+    button {
+        width: 100%;
+        padding: 14px 24px;
+        background: var(--md-sys-color-primary);
+        color: var(--md-sys-color-on-primary);
+        border: none;
+        border-radius: 100px; /* Pill shape */
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        margin-top: 24px;
+        transition: filter 0.2s, box-shadow 0.2s;
+    }
+    button:hover:not(:disabled) { 
+        filter: brightness(1.1); 
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3); 
+    }
+    button:disabled { 
+        background: var(--md-sys-color-surface-container-high); 
+        color: var(--md-sys-color-on-surface-variant); 
+        cursor: not-allowed; 
+        box-shadow: none;
+    }
+    .footer { margin-top: 24px; font-size: 14px; color: var(--md-sys-color-on-surface-variant); }
+    .footer a { color: var(--md-sys-color-primary); text-decoration: none; font-weight: 500; }
+    .footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Register for Team Pulse</h2>
+    <div id="error-msg" class="error"></div>
+    <form id="register-form">
+        <div class="form-grid">
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="name@example.com" required>
+            </div>
+            <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" placeholder="Username" required autocomplete="off">
+                <span id="username-status" class="username-check"></span>
+            </div>
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Password" required>
+            </div>
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" placeholder="Full Name" required>
+            </div>
+            <div class="form-group">
+                <label for="age">Age</label>
+                <input type="number" id="age" min="1" placeholder="Age" required>
+            </div>
+            <div class="form-group">
+                <label for="gender">Gender</label>
+                <select id="gender" required>
+                    <option value="" disabled selected>Select</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="company">Company</label>
+                <select id="company" required>
+                    <option value="" disabled selected>Select Company</option>
+                    <option value="Company 1">Company 1</option>
+                    <option value="Company 2">Company 2</option>
+                    <option value="teampulse">teampulse</option>
+                    <option value="Company 4">Company 4</option>
+                    <option value="Company 5">Company 5</option>
+                    <option value="Company 6">Company 6</option>
+                    <option value="Company 7">Company 7</option>
+                    <option value="Company 8">Company 8</option>
+                    <option value="Company 9">Company 9</option>
+                    <option value="Company 10">Company 10</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="position">Position</label>
+                <input type="text" id="position" placeholder="Position" required>
+            </div>
+        </div>
+        
+        <button type="submit" id="submit-btn" disabled>Register</button>
+    </form>
+    <div class="footer">
+        Already have an account? <a href="login.html">Login here</a>
+    </div>
+</div>
+
+<script>
+    let isUsernameValid = false;
+    const usernameInput = document.getElementById('username');
+    const usernameStatus = document.getElementById('username-status');
+    const submitBtn = document.getElementById('submit-btn');
+
+    let debounceTimer;
+
+    usernameInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const username = usernameInput.value.trim();
+        
+        if (!username) {
+            usernameStatus.innerHTML = '';
+            isUsernameValid = false;
+            updateSubmitButton();
+            return;
+        }
+
+        usernameStatus.innerHTML = '...';
+        
+        debounceTimer = setTimeout(async () => {
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/check-username?username=${encodeURIComponent(username)}`);
+                const exists = await res.json();
+                
+                if (exists) {
+                    usernameStatus.innerHTML = '<span class="check-fail">✗</span>';
+                    isUsernameValid = false;
+                } else {
+                    usernameStatus.innerHTML = '<span class="check-ok">✓</span>';
+                    isUsernameValid = true;
+                }
+                updateSubmitButton();
+            } catch(e) {
+                usernameStatus.innerHTML = '';
+            }
+        }, 300); // 300ms debounce
+    });
+
+    function updateSubmitButton() {
+        submitBtn.disabled = !isUsernameValid;
+    }
+
+    document.getElementById('register-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!isUsernameValid) return;
+
+        const data = {
+            email: document.getElementById('email').value.trim(),
+            username: document.getElementById('username').value.trim(),
+            password: document.getElementById('password').value.trim(),
+            name: document.getElementById('name').value,
+            age: parseInt(document.getElementById('age').value),
+            gender: document.getElementById('gender').value,
+            company: document.getElementById('company').value,
+            position: document.getElementById('position').value
+        };
+
+        const errorMsg = document.getElementById('error-msg');
+
+        try {
+            const res = await fetch(`${API_BASE}/api/auth/register`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (res.ok) {
+                window.location.href = 'login.html';
+            } else {
+                errorMsg.style.display = 'block';
+                errorMsg.innerText = await res.text();
+            }
+        } catch (err) {
+            errorMsg.style.display = 'block';
+            errorMsg.innerText = 'Network error';
+        }
+    });
+</script>
+
+</body>
+</html>
